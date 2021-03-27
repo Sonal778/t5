@@ -14,7 +14,7 @@ input_sentence = ""
 # Selecting the tokenizer
 def select_tokenizer(tokenizer_name):
     if tokenizer_name == "t5-small":
-        tokenizer = T5Tokenizer.from_pretrained('T5-small')
+        tokenizer = T5Tokenizer.from_pretrained('t5-small')
     else:
         tokenizer = T5Tokenizer.from_pretrained('Vamsi/T5_Paraphrase_Paws')
     return tokenizer
