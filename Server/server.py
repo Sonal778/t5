@@ -179,7 +179,7 @@ def re():
 def rephrase():
     return {"data": "Hello World"}
 @app.post("/hello")
-def forward:
+def forward():
     return {"data": "Hello World"}
 
 
