@@ -112,9 +112,6 @@ def preprocess_output(model_output, tokenizer, temp, sentence, decoding_params, 
     return temp
 
 
-@app.route("/run_forward", methods=["POST"])
-
-
 @app.get("/re")
 def re():
     params = request.get_json()
