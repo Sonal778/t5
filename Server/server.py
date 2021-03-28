@@ -225,10 +225,16 @@ def rephrase():
 @app.get("/v2")
 def rephrase():
     return {"data": paraphrases}
+@app.post("/v2")
+def rephrase():
+    return {"data": paraphrases}
 
 @app.get("/hello")
 def rephrase():
-    return {"data": Hello World}
+    return {"data": "Hello World"}
+@app.post("/hello")
+def rephrase():
+    return {"data": "Hello World"}
 
 
 if __name__ == "__main__":
