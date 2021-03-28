@@ -1,12 +1,14 @@
 import random
 from flask import Flask, request, jsonify
+
 from fastapi import FastAPI
+
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 import torch
 
-import tensorflow_hub as hub
+import uvicorn
 
-app = Flask(__name__)
+import tensorflow_hub as hub
 
 app = FastAPI()
 
@@ -111,6 +113,37 @@ def preprocess_output(model_output, tokenizer, temp, sentence, decoding_params, 
 
 
 @app.route("/run_forward", methods=["POST"])
+
+
+@app.get("/re")
+def re():
+    params = request.get_json()
+    sentence = params["sentence"]
+    decoding_params = params["decoding_params"]
+
+    global input_sentence
+    input_sentence = sentence
+
+    tokenizer_name = decoding_params["tokenizer"]
+    model = T5ForConditionalGeneration.from_pretrained('Vamsi/T5_Paraphrase_Paws')
+    tokenizer = select_tokenizer(tokenizer_name)
+
+    model_output = run_model(sentence, decoding_params, tokenizer, model)
+
+    paraphrases = []
+    temp = []
+
+    temp = preprocess_output(model_output, tokenizer, temp, sentence, decoding_params, model)
+
+    global output_cache
+    output_cache = temp
+
+    for i, line in enumerate(temp):
+        paraphrases.append(f"{i + 1}. {line}")
+
+    return {"data": paraphrases}
+
+@app.post("/re")
 def forward():
     params = request.get_json()
     sentence = params["sentence"]
@@ -138,104 +171,20 @@ def forward():
 
     return {"data": paraphrases}
 
-@app.route("/rephrase", methods=["GET"])
-def rephrase():
-    query_param = request.args
-    sentence = query_param.get('sentence')
-    decoding_params = query_param.get('decoding_params')
-
-    global input_sentence
-    input_sentence = sentence
-
-    tokenizer_name = decoding_params["tokenizer"]
-    model = T5ForConditionalGeneration.from_pretrained('Vamsi/T5_Paraphrase_Paws')
-    tokenizer = select_tokenizer(tokenizer_name)
-
-    model_output = run_model(sentence, decoding_params, tokenizer, model)
-
-    paraphrases = []
-    temp = []
-
-    temp = preprocess_output(model_output, tokenizer, temp, sentence, decoding_params, model)
-
-    global output_cache
-    output_cache = temp
-
-    for i, line in enumerate(temp):
-        paraphrases.append(f"{i + 1}. {line}")
-
-    return {"data": paraphrases}
-
-@app.get("/re")
-def rephrase():
-    query_param = request.args
-    sentence = query_param.get('sentence')
-    decoding_params = query_param.get('decoding_params')
-
-    global input_sentence
-    input_sentence = sentence
-
-    tokenizer_name = decoding_params["tokenizer"]
-    model = T5ForConditionalGeneration.from_pretrained('Vamsi/T5_Paraphrase_Paws')
-    tokenizer = select_tokenizer(tokenizer_name)
-
-    model_output = run_model(sentence, decoding_params, tokenizer, model)
-
-    paraphrases = []
-    temp = []
-
-    temp = preprocess_output(model_output, tokenizer, temp, sentence, decoding_params, model)
-
-    global output_cache
-    output_cache = temp
-
-    for i, line in enumerate(temp):
-        paraphrases.append(f"{i + 1}. {line}")
-
-    return {"data": paraphrases}
-
-@app.post("/re")
-def rephrase():
-    query_param = request.args
-    sentence = query_param.get('sentence')
-    decoding_params = query_param.get('decoding_params')
-
-    global input_sentence
-    input_sentence = sentence
-
-    tokenizer_name = decoding_params["tokenizer"]
-    model = T5ForConditionalGeneration.from_pretrained('Vamsi/T5_Paraphrase_Paws')
-    tokenizer = select_tokenizer(tokenizer_name)
-
-    model_output = run_model(sentence, decoding_params, tokenizer, model)
-
-    paraphrases = []
-    temp = []
-
-    temp = preprocess_output(model_output, tokenizer, temp, sentence, decoding_params, model)
-
-    global output_cache
-    output_cache = temp
-
-    for i, line in enumerate(temp):
-        paraphrases.append(f"{i + 1}. {line}")
-
-    return {"data": paraphrases}
-
 @app.get("/v2")
-def rephrase():
+def forward():
     return {"data": paraphrases}
 @app.post("/v2")
-def rephrase():
+def re():
     return {"data": paraphrases}
 
 @app.get("/hello")
 def rephrase():
     return {"data": "Hello World"}
 @app.post("/hello")
-def rephrase():
+def forward:
     return {"data": "Hello World"}
 
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0')
+if __name__ == '__main__':
+    uvicorn.run(app)
