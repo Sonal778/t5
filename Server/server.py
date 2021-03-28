@@ -168,18 +168,8 @@ def forward():
 
     return {"data": paraphrases}
 
-@app.get("/v2")
-def forward():
-    return {"data": paraphrases}
-@app.post("/v2")
-def re():
-    return {"data": paraphrases}
-
-@app.get("/hello")
-def rephrase():
-    return {"data": "Hello World"}
 @app.post("/hello")
-def forward():
+def helo():
     return {"data": "Hello World"}
 
 
