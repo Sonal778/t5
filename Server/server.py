@@ -1,7 +1,6 @@
 import random
 from flask import Flask, request, jsonify
 
-from fastapi import FastAPI
 
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 import torch
@@ -9,7 +8,7 @@ import torch
 
 import tensorflow_hub as hub
 
-app = FastAPI()
+app = Flask(__name__)
 
 output_cache = []
 input_sentence = ""
@@ -111,35 +110,7 @@ def preprocess_output(model_output, tokenizer, temp, sentence, decoding_params, 
     return temp
 
 
-@app.get("/re")
-def re():
-    params = request.get_json()
-    sentence = params["sentence"]
-    decoding_params = params["decoding_params"]
-
-    global input_sentence
-    input_sentence = sentence
-
-    tokenizer_name = decoding_params["tokenizer"]
-    model = T5ForConditionalGeneration.from_pretrained('Vamsi/T5_Paraphrase_Paws')
-    tokenizer = select_tokenizer(tokenizer_name)
-
-    model_output = run_model(sentence, decoding_params, tokenizer, model)
-
-    paraphrases = []
-    temp = []
-
-    temp = preprocess_output(model_output, tokenizer, temp, sentence, decoding_params, model)
-
-    global output_cache
-    output_cache = temp
-
-    for i, line in enumerate(temp):
-        paraphrases.append(f"{i + 1}. {line}")
-
-    return {"data": paraphrases}
-
-@app.post("/re")
+@app.route("/run_forward", methods=["POST"])
 def forward():
     params = request.get_json()
     sentence = params["sentence"]
@@ -167,7 +138,7 @@ def forward():
 
     return {"data": paraphrases}
 
-@app.post("/hello")
+@app.route("/hello")
 def helo():
     return {"data": "Hello World"}
 
