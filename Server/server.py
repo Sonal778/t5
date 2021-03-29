@@ -29,34 +29,34 @@ def run_model(sentence, decoding_params, tokenizer, model):
 
     text = "paraphrase: " + sentence + " </s>"
 
-    max_len = decoding_params["max_len"]
+    max_len = decoding_params['max_len']
 
     encoding = tokenizer.encode_plus(text, pad_to_max_length=True, return_tensors="pt")
     input_ids, attention_masks = encoding["input_ids"].to(device), encoding["attention_mask"].to(device)
 
-    if decoding_params["strategy"] == "Greedy Decoding":
+    if decoding_params['strategy'] == "Greedy Decoding":
         beam_outputs = model.generate(
             input_ids=input_ids, attention_mask=attention_masks,
             max_length=max_len,
             # num_return_sequences=decoding_params["return_sen_num"]
         )
-    elif decoding_params["strategy"] == "Beam Search":
+    elif decoding_params['strategy'] == "Beam Search":
         beam_outputs = model.generate(
             input_ids=input_ids, attention_mask=attention_masks,
             max_length=max_len,
             num_beams=decoding_params["beams"],
-            no_repeat_ngram_size=decoding_params["ngram"],
+            no_repeat_ngram_size=decoding_params['ngram'],
             early_stopping=True,
-            temperature=decoding_params["temperature"],
-            num_return_sequences=decoding_params["return_sen_num"]  # Number of sentences to return
+            temperature=decoding_params['temperature'],
+            num_return_sequences=decoding_params['return_sen_num']  # Number of sentences to return
         )
     else:
         beam_outputs = model.generate(
             input_ids=input_ids, attention_mask=attention_masks,
             do_sample=True,
             max_length=max_len,
-            top_k=decoding_params["top_k"],
-            top_p=decoding_params["top_p"],
+            top_k=decoding_params['top_k'],
+            top_p=decoding_params['top_p'],
             early_stopping=True,
             # temperature=decoding_params["temperature"],
             num_return_sequences=decoding_params["return_sen_num"]  # Number of sentences to return
@@ -92,15 +92,15 @@ def preprocess_output(model_output, tokenizer, temp, sentence, decoding_params, 
     for line in model_output:
         paraphrase = tokenizer.decode(line, skip_special_tokens=True, clean_up_tokenization_spaces=True)
         if paraphrase.lower() != sentence.lower() and paraphrase not in temp:
-            if decoding_params["strategy"] == "Top-k, Top-p sampling":
+            if decoding_params['strategy'] == "Top-k, Top-p sampling":
                 if checkDuplicate(paraphrase, decoding_params, temp):
                     temp.append(paraphrase)
             else:
                 temp.append(paraphrase)
 
-    if decoding_params["strategy"] != "Greedy Decoding" and len(temp) < decoding_params["return_sen_num"]:
+    if decoding_params['strategy'] != "Greedy Decoding" and len(temp) < decoding_params['return_sen_num']:
         temp1 = temp
-        if decoding_params["strategy"] == "Top-k, Top-p sampling":
+        if decoding_params['strategy'] == "Top-k, Top-p sampling":
             sentence = input_sentence
         else:
             sentence = temp1[random.randint(0, len(temp1)-1)]
@@ -113,13 +113,14 @@ def preprocess_output(model_output, tokenizer, temp, sentence, decoding_params, 
 @app.route("/run_forward", methods=["POST"])
 def forward():
     params = request.get_json()
-    sentence = params["sentence"]
-    decoding_params = params["decoding_params"]
+    sentence = params['sentence']
+    print(sentence)
+    decoding_params = params['decoding_params']
 
     global input_sentence
-    input_sentence = sentence
+    input_sentence = str(sentence)
 
-    tokenizer_name = decoding_params["tokenizer"]
+    tokenizer_name = decoding_params['tokenizer']
     model = T5ForConditionalGeneration.from_pretrained('Vamsi/T5_Paraphrase_Paws')
     tokenizer = select_tokenizer(tokenizer_name)
 
@@ -136,6 +137,7 @@ def forward():
     for i, line in enumerate(temp):
         paraphrases.append(f"{i + 1}. {line}")
 
+    print({"data": paraphrases})
     return {"data": paraphrases}
 
 @app.route("/hello")
