@@ -1,5 +1,5 @@
 import random
-from flask import Flask, request, jsonify
+from flask import Flask, request
 
 
 from transformers import T5ForConditionalGeneration, T5Tokenizer
