@@ -6,7 +6,6 @@ from fastapi import FastAPI
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 import torch
 
-import uvicorn
 
 import tensorflow_hub as hub
 
@@ -173,5 +172,5 @@ def helo():
     return {"data": "Hello World"}
 
 
-if __name__ == '__main__':
-    uvicorn.run(app)
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
