@@ -13,4 +13,4 @@ EXPOSE 5000
 
 EXPOSE $PORT
 
-CMD python server.py
+CMD ["python",  "server.py"]
