@@ -140,6 +140,37 @@ def forward():
     print({"data": paraphrases})
     return {"data": paraphrases}
 
+@app.route('/run')
+def runner():
+    # if key doesn't exist, returns None
+    sentence = request.args.get('sentence')
+    print(sentence)
+    param1 = request.args.get('decoding_params')
+    decoding_params = param1.get_json()
+
+    global input_sentence
+    input_sentence = str(sentence)
+
+    tokenizer_name = decoding_params['tokenizer']
+    model = T5ForConditionalGeneration.from_pretrained('Vamsi/T5_Paraphrase_Paws')
+    tokenizer = select_tokenizer(tokenizer_name)
+
+    model_output = run_model(sentence, decoding_params, tokenizer, model)
+
+    paraphrases = []
+    temp = []
+
+    temp = preprocess_output(model_output, tokenizer, temp, sentence, decoding_params, model)
+
+    global output_cache
+    output_cache = temp
+
+    for i, line in enumerate(temp):
+        paraphrases.append(f"{i + 1}. {line}")
+
+    print({"data": paraphrases})
+    return {"data": paraphrases}
+
 @app.route("/hello")
 def helo():
     return {"data": "Hello World"}
