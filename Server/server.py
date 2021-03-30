@@ -1,14 +1,14 @@
 import random
-from flask import Flask, request
 
+import uvicorn
+from fastapi import FastAPI, Request
 
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 import torch
 
-
 import tensorflow_hub as hub
 
-app = Flask(__name__)
+app = FastAPI()
 
 output_cache = []
 input_sentence = ""
@@ -110,9 +110,9 @@ def preprocess_output(model_output, tokenizer, temp, sentence, decoding_params, 
     return temp
 
 
-@app.route("/run_forward", methods=["POST"])
-def forward():
-    params = request.get_json()
+@app.post("/run_forward")
+async def forward(request: Request):
+    params = await request.json()
     sentence = params['sentence']
     print(sentence)
     decoding_params = params['decoding_params']
@@ -140,7 +140,7 @@ def forward():
     print({"data": paraphrases})
     return {"data": paraphrases}
 
-@app.route('/run')
+@app.get('/run')
 def runner():
     # if key doesn't exist, returns None
     sentence = request.args.get('sentence')
@@ -171,10 +171,10 @@ def runner():
     print({"data": paraphrases})
     return {"data": paraphrases}
 
-@app.route("/hello")
+@app.post("/hello")
 def helo():
     return {"data": "Hello World"}
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0')
+    uvicorn.run(host="0.0.0.0", port=5000, log_level="info")
